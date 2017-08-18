@@ -14,9 +14,9 @@ import matplotlib.cm as cm
 
 def parse_args():
     parser = argparse.ArgumentParser(description='batch proccesing: photos->edges')
-    parser.add_argument('--caffe_root', dest='caffe_root', help='caffe root', default='/home/sizhexi/caffe/caffe/', type=str)
-    parser.add_argument('--caffemodel', dest='caffemodel', help='caffemodel', default='examples/hed/hed_pretrained_bsds.caffemodel', type=str)
-    parser.add_argument('--prototxt', dest='prototxt', help='caffe prototxt file', default='examples/hed/hed_test.pt', type=str)
+    parser.add_argument('--caffe_root', dest='caffe_root', help='caffe root', default='/home/pxm/caffe/', type=str)
+    parser.add_argument('--caffemodel', dest='caffemodel', help='caffemodel', default='examples/EdgeDetection/hed/hed_pretrained_bsds.caffemodel', type=str)
+    parser.add_argument('--prototxt', dest='prototxt', help='caffe prototxt file', default='examples/EdgeDetection/hed/hed_test.pt', type=str)
     parser.add_argument('--images_dir', dest='images_dir', help='directory to store input photos', type=str)
     parser.add_argument('--hed_mat_dir', dest='hed_mat_dir', help='directory to store output hed edges in mat file',  type=str)
     parser.add_argument('--border', dest='border', help='padding border', type=int, default=128)
@@ -37,7 +37,7 @@ def plot_single_scale(scale_lst, size,image_name):
 	    s.xaxis.set_ticks_position('none')
 	plt.tight_layout()
         plt.draw()
-        plt.savefig('examples/hed/test/'+image_name+'_'+str(size)+'.png', bbox_inches='tight')
+        plt.savefig('examples/EdgeDetection/hed/test/'+image_name+'_'+str(size)+'.png', bbox_inches='tight')
         #plt.close(fig)
 
 
@@ -64,8 +64,8 @@ print args.images_dir
 print('#images = %d' % nImgs)
 
 
-caffe.set_mode_gpu()
-caffe.set_device(args.gpu_id)
+caffe.set_mode_cpu()
+#caffe.set_device(args.gpu_id)
 # load net
 net = caffe.Net(args.prototxt, args.caffemodel, caffe.TEST)
 # pad border
