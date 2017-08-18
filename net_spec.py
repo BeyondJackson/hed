@@ -1,5 +1,5 @@
 import sys, os
-sys.path.insert(0, '/home/pxm/caffe/python')
+sys.path.insert(0, '/home/sizhexi/caffe/caffe/python')
 import caffe
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
@@ -34,8 +34,40 @@ def fcn(split):
     n.conv3_1, n.relu3_1 = conv_relu(n.pool2, 256)
     n.conv3_2, n.relu3_2 = conv_relu(n.relu3_1, 256)
     n.conv3_3, n.relu3_3 = conv_relu(n.relu3_2, 256)
-    n.pool3 = max_pool(n.relu3_3)conv3_3, 'score-dsn3', lr=1)
+    n.pool3 = max_pool(n.relu3_3)
 
+    n.conv4_1, n.relu4_1 = conv_relu(n.pool3, 512)
+    n.conv4_2, n.relu4_2 = conv_relu(n.relu4_1, 512)
+    n.conv4_3, n.relu4_3 = conv_relu(n.relu4_2, 512)
+    n.pool4 = max_pool(n.relu4_3)
+    
+    n.conv5_1, n.relu5_1 = conv_relu(n.pool4, 512, mult=[100,1,200,0])
+    n.conv5_2, n.relu5_2 = conv_relu(n.relu5_1, 512, mult=[100,1,200,0])
+    n.conv5_3, n.relu5_3 = conv_relu(n.relu5_2, 512, mult=[100,1,200,0])
+    
+    # DSN1
+    n.score_dsn1=full_conv(n.conv1_2, 'score-dsn1', lr=1)
+    n.upscore_dsn1 = crop(n.score_dsn1, n.data)
+    if split=='train':
+        n.loss1 = L.SigmoidCrossentropyLoss(n.upscore_dsn1, n.label)
+    if split=='test':
+        n.sigmoid_dsn1 = L.Sigmoid(n.upscore_dsn1)
+    # n.sigmoid_dsn1 = L.Sigmoid(n.upscore_dsn1)
+    
+    # DSN2
+    n.score_dsn2=full_conv(n.conv2_2, 'score-dsn2', lr=1)
+    n.score_dsn2_up = L.Deconvolution(n.score_dsn2, name='upsample_2', 
+        convolution_param=dict(num_output=1, kernel_size=4, stride=2),
+        param=[dict(lr_mult=0, decay_mult=1), dict(lr_mult=0, decay_mult=0)])
+    n.upscore_dsn2 = crop(n.score_dsn2_up, n.data)
+    if split=='train':
+        n.loss2 = L.SigmoidCrossentropyLoss(n.upscore_dsn2, n.label)
+    if split=='test':
+        n.sigmoid_dsn2 = L.Sigmoid(n.upscore_dsn2)
+    # n.sigmoid_dsn2 = L.Sigmoid(n.upscore_dsn2)
+    
+    # DSN3
+    n.score_dsn3=full_conv(n.conv3_3, 'score-dsn3', lr=1)
     n.score_dsn3_up = L.Deconvolution(n.score_dsn3, name='upsample_4', 
         convolution_param=dict(num_output=1, kernel_size=8, stride=4),
         param=[dict(lr_mult=0, decay_mult=1), dict(lr_mult=0, decay_mult=0)])
@@ -89,11 +121,11 @@ def fcn(split):
     return n.to_proto()
 
 def make_net():
-    with open('examples/EdgeDetection/hed/hed_train.pt', 'w') as f:
+    with open('examples/hed/hed_train.pt', 'w') as f:
         f.writelines(os.linesep+'force_backward: true'+os.linesep)
         f.write(str(fcn('train')))
 
-    with open('examples/EdgeDetection/hed/hed_test.pt', 'w') as f:
+    with open('examples/hed/hed_test.pt', 'w') as f:
         f.write(str(fcn('test')))
 def make_solver():
     sp = {}
