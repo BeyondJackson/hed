@@ -1,5 +1,5 @@
 import sys, os
-sys.path.insert(0, '/home/sizhexi/caffe/caffe/python')
+sys.path.insert(0, '/home/pxm/caffe/python')
 import caffe
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
@@ -121,11 +121,11 @@ def fcn(split):
     return n.to_proto()
 
 def make_net():
-    with open('examples/hed/hed_train.pt', 'w') as f:
+    with open('hed/hed/hed_train.pt', 'w') as f:
         f.writelines(os.linesep+'force_backward: true'+os.linesep)
         f.write(str(fcn('train')))
 
-    with open('examples/hed/hed_test.pt', 'w') as f:
+    with open('hed/hed/hed_test.pt', 'w') as f:
         f.write(str(fcn('test')))
 def make_solver():
     sp = {}
@@ -142,7 +142,7 @@ def make_solver():
     sp['gamma'] = '0.1'
     sp['max_iter'] = '100000'
     sp['solver_mode'] = 'CPU'
-    f = open('examples/hed/solver.pt', 'w')
+    f = open('hed/hed/solver.pt', 'w')
     for k, v in sorted(sp.items()):
         if not(type(v) is str):
             raise TypeError('All solver parameters must be strings')
